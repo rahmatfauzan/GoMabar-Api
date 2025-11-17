@@ -251,4 +251,38 @@ class MabarSessionController extends Controller
 
         return MyParticipantsResource::collection($participant);
     }
+
+    public function update(Request $request, MabarSession $mabarSession)
+    {
+        $isAdmin = $this->user->roles->contains('name', 'admin');
+
+        if (!$isAdmin && $mabarSession->host_user_id !== $this->user->id) {
+            return response()->json(['message' => 'Hanya host atau admin yang bisa memperbarui sesi ini.'], 403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'type' => ['sometimes', 'required', Rule::in(['open_play', 'team_challenge', 'mini_tournament'])],
+            'description' => 'sometimes|nullable|string',
+            'cover_image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'slots_total' => 'sometimes|required|integer|min:2',
+            'price_per_slot' => 'sometimes|required|integer|min:0',
+            'payment_instructions' => 'sometimes|required|string|max:1000',
+        ]);
+
+
+        $imagePath = $mabarSession->cover_image;
+
+        if ($request->hasFile('cover_image')) {
+            if ($imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            $imagePath = $request->file('cover_image')->store('mabar_covers', 'public');
+            $validated['cover_image'] = $imagePath; // Set path baru untuk di-update
+        }
+
+        $mabarSession->update($validated);
+
+        return new MabarSessionResource($mabarSession);
+    }
 }

@@ -21,10 +21,10 @@ class MabarParticipantController extends Controller
     {
         $user = Auth::user();
 
-        $mabarstatus=$mabarSession->load('booking')->booking->status;
+        $mabarstatus = $mabarSession->load('booking')->booking->status;
 
         // 1. Cek Sesi (Harus 'awaiting_payment' atau 'confirmed')
-        if ($mabarstatus!== "active") {
+        if ($mabarstatus !== "active") {
             return response()->json(['message' => 'Sesi mabar ini tidak sedang menerima peserta.'], 403);
         }
 
@@ -186,7 +186,7 @@ class MabarParticipantController extends Controller
     public function cancelParticipation(Request $request)
     {
         $user = Auth::user();
-        
+
         $validated = $request->validate([
             'mabar_participant_id' => 'required|integer|exists:mabar_participants,id',
         ]);
@@ -207,5 +207,26 @@ class MabarParticipantController extends Controller
         $mabarParticipant->delete();
 
         return response()->json(['message' => 'Partisipasi berhasil dibatalkan.'], 200);
+    }
+
+    public function destroy(MabarParticipant $mabarParticipant)
+    {
+        $host = Auth::user();
+        $mabarSession = $mabarParticipant->mabarSession;
+
+        // 1. Otorisasi: Pastikan yang menghapus adalah Host
+        if ($mabarSession->host_user_id !== $host->id) {
+            return response()->json(['message' => 'Hanya host yang bisa menghapus partisipan.'], 403);
+        }
+
+        // 2. Hapus bukti pembayaran jika ada
+        if ($mabarParticipant->payment_proof_image) {
+            Storage::disk('public')->delete($mabarParticipant->payment_proof_image);
+        }
+
+        // 3. Hapus record partisipan
+        $mabarParticipant->delete();
+
+        return response()->json(['message' => 'Partisipan berhasil dihapus.'], 200);
     }
 }

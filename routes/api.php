@@ -64,12 +64,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/mabar-sessions', [MabarSessionController::class, 'store']);
     Route::delete('/mabar-sessions/{mabarSession}', [MabarSessionController::class, 'destroy']);
+    Route::put('/mabar-sessions/{mabarSession}', [MabarSessionController::class, 'update']);
     Route::get('/user/mabar-sessions', [MabarSessionController::class, 'userSessions']);
     Route::get('/user/joined-sessions', [MabarSessionController::class, 'userJoinedSessions']);
 
     Route::post('/mabar-sessions/{mabarSession}/join', [MabarParticipantController::class, 'join']);
     Route::post('/mabar-participants/upload-proof', [MabarParticipantController::class, 'uploadProof']);
     Route::post('/mabar-participants/cancel', [MabarParticipantController::class, 'cancelParticipation']);
+
+    Route::delete('/mabar-participants/{mabarParticipant}', [MabarParticipantController::class, 'destroy']);
 
     Route::patch('/mabar-participants/{mabarParticipant}/status', [MabarParticipantController::class, 'updateStatus']);
     Route::post('/mabar-sessions/{mabarSession}/add-manual', [MabarParticipantController::class, 'addManual']);
