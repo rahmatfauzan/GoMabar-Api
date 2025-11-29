@@ -23,12 +23,14 @@ class DashboardController extends Controller
         $formattedBookings = $bookings->map(function ($booking) {
             return [
                 'id' => $booking->id,
-                'invoice' => $booking->invoice_number, // Ganti 'invoice' jika nama kolom beda
-                'customer' => $booking->name_orders ?? $booking->user->name, // Ambil dari relasi
-                'field' => $booking->field->name, // Ambil dari relasi
-                'slots' => $booking->slots_booked, // Ganti jika nama kolom beda
-                'total' => $booking->price,
-                'status' => $booking->status,
+                'invoice_number' => $booking->invoice_number, // Ganti 'invoice' jika nama kolom beda
+                'customer_name' => $booking->name_orders ?? $booking->user->name, // Ambil dari relasi
+                'field' => [
+                    'id' => $booking->field->id,
+                    'name' => $booking->field->name,
+                ],
+                'price' => $booking->price,
+                'booked_status' => $booking->status,
             ];
         });
 
